@@ -18,6 +18,20 @@ export default class Phonebook extends Component {
     number: '',
   };
 
+  componentDidMount() {
+    const contacts = localStorage.getItem('contacts');
+    const parsedContacts = JSON.parse(contacts);
+    if (parsedContacts) {
+      this.setState({ contacts: parsedContacts });
+    }
+  }
+
+  componentDidUpdate(_, prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+    }
+  }
+
   reset = () => {
     this.setState({ name: '', number: '' });
   };
@@ -28,7 +42,28 @@ export default class Phonebook extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    this.checkContacts();
+
+    const name = e.target.name.value;
+    const number = e.target.number.value;
+    const contactsNames = this.state.contacts.find(
+      contact => contact.name === name
+    );
+    const contactsNumbers = this.state.contacts.find(
+      contact => contact.number === number
+    );
+
+    if (contactsNames) {
+      alert(`${name} is already in contacts`);
+      this.reset();
+      return;
+    }
+
+    if (contactsNumbers) {
+      alert(`${number} is already in contacts`);
+      this.reset();
+      return;
+    }
+
     this.setState(prevState => {
       const newContact = {
         id: nanoid(),
@@ -42,6 +77,7 @@ export default class Phonebook extends Component {
       };
     });
   };
+
   searchFilter = e => {
     this.setState({ filter: e.currentTarget.value });
   };
@@ -60,28 +96,6 @@ export default class Phonebook extends Component {
     }));
   };
 
-  checkContacts = () => {
-    const { contacts, name } = this.state;
-    const findContact = contacts.find(contact => contact.name === name);
-
-    if (findContact) {
-      alert(`${this.state.name} is already in contacts`);
-    }
-  };
-
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parsedContacts = JSON.parse(contacts);
-    if (parsedContacts) {
-      this.setState({ contacts: parsedContacts });
-    }
-  }
-
-  componentDidUpdate(_, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-    }
-  }
   render() {
     const filter = this.contactFilter();
 
